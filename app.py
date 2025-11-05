@@ -122,6 +122,5 @@ if ready:
         st.error(f"Gagal mengambil audio (masalah CORS atau jaringan): {e}")
         st.error(f"URL Audio: {audio_url}")
 
-    st.components.v1.html(html_code, height=460, scrolling=True)
     st.markdown("> 🔊 **Auto Play** & **Repeat** aktif sesuai pengaturan di atas.")
 
