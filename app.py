@@ -139,101 +139,109 @@ if ready:
     </style>
 
     <script>
-    (function() {{
-      const payload = {payload_json};
+    (function() {
+      const payload = {{payload_json}};
       const audio = document.getElementById('audio');
       const playBtn = document.getElementById('playBtn');
       const pauseBtn = document.getElementById('pauseBtn');
       const seek = document.getElementById('seek');
       const timeLabel = document.getElementById('timeLabel');
-
+    
       const arabText = payload.arab;
       const latinText = payload.latin;
       const indoText = payload.indo;
-
-      function splitArabic(text) {{
-        const words = text.trim().split(/\\s+/);
+    
+      function splitArabic(text) {
+        const words = text.trim().split(/\s+/);
         if (words.length < 2) return text.split('');
         return words;
-      }}
-
+      }
+    
       const arabSegs = splitArabic(arabText);
       const arabContainer = document.getElementById('arabContainer');
       arabContainer.innerHTML = '';
-      arabSegs.forEach((seg, i) => {{
+      arabSegs.forEach((seg, i) => {
         const span = document.createElement('span');
         span.className = 'kara-seg';
         span.dataset.idx = i;
         span.textContent = seg + ' ';
         arabContainer.appendChild(span);
-      }});
-
+      });
+    
       document.getElementById('latinContainer').textContent = latinText;
       document.getElementById('indoContainer').textContent = indoText;
-
+    
       let duration = 0;
-      // --- PERUBAHAN DIMULAI ---
-      // Secara manual atur sumber audio dari payload JS
-      if (payload.audio_url) {{
-          audio.src = payload.audio_url;
-      }} else {{
-          console.error("Audio URL tidak ditemukan di payload.");
-      }}
-
-      audio.onloadedmetadata = () => {{
-        duration = audio.duration;
-        timeLabel.textContent = '0:00 / ' + formatTime(duration);
-        
-        // Logika autoplay yang lebih baik dengan penanganan promise
-        if (payload.auto_play === "true") {{
-           var playPromise = audio.play();
-           if (playPromise !== undefined) {{
-             playPromise.catch(e => {{
-               console.warn('Autoplay dicegah oleh browser:', e);
-             }});
-           }}
-        }}
-      }};
-
-      function formatTime(t) {{
+    
+      // --- Atur sumber audio ---
+      if (payload.audio_url) {
+        audio.src = payload.audio_url;
+      } else {
+        console.error("Audio URL tidak ditemukan di payload.");
+      }
+    
+      // --- Manual play button ---
+      playBtn.onclick = () => {
+        audio.play().then(() => {
+          console.log("Audio dimulai manual");
+        }).catch(err => console.log("Play error:", err));
+      };
+    
+      pauseBtn.onclick = () => audio.pause();
+    
+      // --- Setelah metadata siap ---
+      audio.onloadedmetadata = () => {
+        duration = audio.duration;
+        timeLabel.textContent = '0:00 / ' + formatTime(duration);
+    
+        // Autoplay jika diaktifkan
+        if (payload.auto_play === "true") {
+          setTimeout(() => {
+            audio.play().catch(err => {
+              console.warn("Autoplay diblokir oleh browser:", err);
+            });
+          }, 800);
+        }
+      };
+    
+      function formatTime(t) {
         const s = Math.floor(t % 60);
         const m = Math.floor(t / 60);
         return m + ':' + (s < 10 ? '0' + s : s);
-      }}
-
-      function updateUI() {{
+      }
+    
+      function updateUI() {
         if (!duration) return;
         const frac = audio.currentTime / duration;
         seek.value = frac;
         timeLabel.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(duration);
-
+    
         const idx = Math.min(arabSegs.length - 1, Math.floor(frac * arabSegs.length));
         document.querySelectorAll('.kara-seg').forEach(e => e.classList.remove('kara-active'));
-        const active = document.querySelector(`.kara-seg[data-idx="{{idx}}"]`);
+        const active = document.querySelector(`.kara-seg[data-idx="${idx}"]`);
         if (active) active.classList.add('kara-active');
-      }}
-
+      }
+    
       let raf;
-      function loop() {{
+      function loop() {
         updateUI();
         raf = requestAnimationFrame(loop);
-      }}
+      }
+    
       audio.onplay = () => loop();
       audio.onpause = () => cancelAnimationFrame(raf);
-      audio.onended = () => {{
+      audio.onended = () => {
         cancelAnimationFrame(raf);
-        if (payload.repeat === "true") {{
+        if (payload.repeat === "true") {
           audio.currentTime = 0;
           audio.play();
-        }}
-      }};
-
-      playBtn.onclick = () => audio.play();
-      pauseBtn.onclick = () => audio.pause();
-      seek.oninput = e => {{
+        }
+      };
+    
+      seek.oninput = e => {
         audio.currentTime = parseFloat(e.target.value) * duration;
-      }};
-    }})();
+      };
+    })();
     </script>
     """
 
