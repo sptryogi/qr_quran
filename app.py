@@ -195,7 +195,7 @@ if ready:
 
         const idx = Math.min(arabSegs.length - 1, Math.floor(frac * arabSegs.length));
         document.querySelectorAll('.kara-seg').forEach(e => e.classList.remove('kara-active'));
-        const active = document.querySelector(`.kara-seg[data-idx="${idx}"]`);
+        const active = document.querySelector(`.kara-seg[data-idx="{{idx}}"]`);
         if (active) active.classList.add('kara-active');
       }}
 
