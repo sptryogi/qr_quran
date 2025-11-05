@@ -103,126 +103,52 @@ if ready:
     payload_json = json.dumps(payload)
 
     html_code = f"""
-    <div id="karaoke-container" style="max-width:100%; padding:15px; border-radius:8px; border:1px solid #ddd;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <button id="playBtn">▶️ Play</button>
-          <button id="pauseBtn">⏸️ Pause</button>
-          <input id="seek" type="range" min="0" max="1" step="0.001" value="0" style="width:250px;" />
-          <span id="timeLabel">0:00 / 0:00</span>
-        </div>
-        <div>
-          <strong>{payload["surah_nama"]} : {payload["ayat_nomor"]}</strong> | Qari: {payload["reciter"]}
-        </div>
-      </div>
-
-      <audio id="audio" crossorigin="anonymous" preload="metadata" {"autoplay" if auto_play == "Ya" else ""} {"loop" if repeat_audio else ""}>
-        <source src="{payload['audio_url']}" type="audio/mpeg">
-        Browser tidak mendukung audio.
-      </audio>
-
-      <div id="arabContainer" style="margin-top:20px; font-size:48px; direction:rtl; text-align:right; line-height:1.5;"></div>
-      <div id="latinContainer" style="margin-top:10px; font-size:20px;"></div>
-      <div id="indoContainer" style="margin-top:5px; font-size:16px; color:#555;"></div>
+    <div style='text-align:center;'>
+      <h3>{judul_ayat}</h3>
+      <audio id="kara-audio" src="{audio_url}" controls preload="auto"></audio>
+      <br><br>
+      <button id="btnPlay" style="padding:8px 20px;font-size:16px;">▶️ Play Manual</button>
     </div>
-
-    <style>
-      .kara-seg {{
-        display:inline-block;
-        padding:0 2px;
-        transition: background-color 0.2s, color 0.2s;
-      }}
-      .kara-active {{
-        background: #fef08a;
-        color: #000;
-        border-radius:4px;
-      }}
-    </style>
-
+    
     <script>
-    (function() {{
-      const payload = {payload_json};
-      const audio = document.getElementById('audio');
-      const playBtn = document.getElementById('playBtn');
-      const pauseBtn = document.getElementById('pauseBtn');
-      const seek = document.getElementById('seek');
-      const timeLabel = document.getElementById('timeLabel');
-
-      const arabText = payload.arab;
-      const latinText = payload.latin;
-      const indoText = payload.indo;
-
-      function splitArabic(text) {{
-        const words = text.trim().split(/\\s+/);
-        if (words.length < 2) return text.split('');
-        return words;
+    const audio = document.getElementById('kara-audio');
+    const btnPlay = document.getElementById('btnPlay');
+    let autoPlayEnabled = {str(auto_play).lower()};
+    let repeatEnabled = {str(repeat).lower()};
+    
+    // --- Manual Play button ---
+    btnPlay.onclick = () => {{
+      audio.currentTime = 0;
+      audio.play();
+    }};
+    
+    // --- AutoPlay after "Siap" ---
+    if (autoPlayEnabled) {{
+      setTimeout(() => {{
+        audio.play().catch(err => console.log('Autoplay blocked:', err));
+      }}, 1000);
+    }}
+    
+    // --- Repeat logic ---
+    audio.addEventListener('ended', () => {{
+      if (repeatEnabled) {{
+        audio.currentTime = 0;
+        audio.play();
       }}
-
-      const arabSegs = splitArabic(arabText);
-      const arabContainer = document.getElementById('arabContainer');
-      arabContainer.innerHTML = '';
-      arabSegs.forEach((seg, i) => {{
-        const span = document.createElement('span');
-        span.className = 'kara-seg';
-        span.dataset.idx = i;
-        span.textContent = seg + ' ';
-        arabContainer.appendChild(span);
-      }});
-
-      document.getElementById('latinContainer').textContent = latinText;
-      document.getElementById('indoContainer').textContent = indoText;
-
-      let duration = 0;
-      audio.onloadedmetadata = () => {{
-        duration = audio.duration;
-        timeLabel.textContent = '0:00 / ' + formatTime(duration);
-        if (payload.auto_play === "true") {{
-          audio.play().catch(e => console.warn('Autoplay blocked by browser:', e));
-        }}
-      }};
-
-      function formatTime(t) {{
-        const s = Math.floor(t % 60);
-        const m = Math.floor(t / 60);
-        return m + ':' + (s < 10 ? '0' + s : s);
-      }}
-
-      function updateUI() {{
-        if (!duration) return;
-        const frac = audio.currentTime / duration;
-        seek.value = frac;
-        timeLabel.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(duration);
-
-        const idx = Math.min(arabSegs.length - 1, Math.floor(frac * arabSegs.length));
-        document.querySelectorAll('.kara-seg').forEach(e => e.classList.remove('kara-active'));
-        const active = document.querySelector(`.kara-seg[data-idx="{{idx}}"]`);
-        if (active) active.classList.add('kara-active');
-      }}
-
-      let raf;
-      function loop() {{
-        updateUI();
-        raf = requestAnimationFrame(loop);
-      }}
-      audio.onplay = () => loop();
-      audio.onpause = () => cancelAnimationFrame(raf);
-      audio.onended = () => {{
-        cancelAnimationFrame(raf);
-        if (payload.repeat === "true") {{
-          audio.currentTime = 0;
-          audio.play();
-        }}
-      }};
-
-      playBtn.onclick = () => audio.play();
-      pauseBtn.onclick = () => audio.pause();
-      seek.oninput = e => {{
-        audio.currentTime = parseFloat(e.target.value) * duration;
-      }};
-    }})();
+    }});
+    
+    // --- Karaoke highlight sync ---
+    audio.ontimeupdate = () => {{
+      const frac = audio.currentTime / audio.duration;
+      const arabSegs = document.querySelectorAll('.kara-seg');
+      const idx = Math.min(arabSegs.length - 1, Math.floor(frac * arabSegs.length));
+      document.querySelectorAll('.kara-seg').forEach(e => e.classList.remove('kara-active'));
+      const active = document.querySelector(`.kara-seg[data-idx="{{{{idx}}}}"]`);
+      if (active) active.classList.add('kara-active');
+    }};
     </script>
     """
-
-    st.components.v1.html(html_code, height=460, scrolling=True)
+    
+    st.components.v1.html(html_code, height=500)
     st.markdown("> 🔊 **Auto Play** & **Repeat** aktif sesuai pengaturan di atas.")
 
