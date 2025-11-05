@@ -116,10 +116,9 @@ if ready:
         </div>
       </div>
 
-      <audio id="audio" crossorigin="anonymous" preload="metadata" {"autoplay" if auto_play == "Ya" else ""} {"loop" if repeat_audio else ""}>
-        <source src="{payload['audio_url']}" type="audio/mpeg">
-        Browser tidak mendukung audio.
-      </audio>
+      <audio id="audio" crossorigin="anonymous" preload="metadata" {"loop" if repeat_audio else ""}>
+        Browser tidak mendukung audio.
+      </audio>
 
       <div id="arabContainer" style="margin-top:20px; font-size:48px; direction:rtl; text-align:right; line-height:1.5;"></div>
       <div id="latinContainer" style="margin-top:10px; font-size:20px;"></div>
@@ -173,13 +172,28 @@ if ready:
       document.getElementById('indoContainer').textContent = indoText;
 
       let duration = 0;
-      audio.onloadedmetadata = () => {{
-        duration = audio.duration;
-        timeLabel.textContent = '0:00 / ' + formatTime(duration);
-        if (payload.auto_play === "true") {{
-          audio.play().catch(e => console.warn('Autoplay blocked by browser:', e));
-        }}
-      }};
+      // --- PERUBAHAN DIMULAI ---
+      // Secara manual atur sumber audio dari payload JS
+      if (payload.audio_url) {{
+          audio.src = payload.audio_url;
+      }} else {{
+          console.error("Audio URL tidak ditemukan di payload.");
+      }}
+
+      audio.onloadedmetadata = () => {{
+        duration = audio.duration;
+        timeLabel.textContent = '0:00 / ' + formatTime(duration);
+        
+        // Logika autoplay yang lebih baik dengan penanganan promise
+        if (payload.auto_play === "true") {{
+           var playPromise = audio.play();
+           if (playPromise !== undefined) {{
+             playPromise.catch(e => {{
+               console.warn('Autoplay dicegah oleh browser:', e);
+             }});
+           }}
+        }}
+      }};
 
       function formatTime(t) {{
         const s = Math.floor(t % 60);
