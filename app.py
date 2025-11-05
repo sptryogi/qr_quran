@@ -116,7 +116,7 @@ if ready:
         </div>
       </div>
 
-      <audio id="audio" crossorigin="anonymous" preload="metadata" {"loop" if repeat_audio else ""}>
+      <audio id="audio" crossorigin="anonymous" preload="metadata" referrerpolicy="no-referrer" {"loop" if repeat_audio else ""}>
         Browser tidak mendukung audio.
       </audio>
 
