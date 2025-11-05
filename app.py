@@ -140,7 +140,7 @@ if ready:
 
     <script>
     (function() {
-      const payload = {{payload_json}};
+      const payload = {payload_json};
       const audio = document.getElementById('audio');
       const playBtn = document.getElementById('playBtn');
       const pauseBtn = document.getElementById('pauseBtn');
