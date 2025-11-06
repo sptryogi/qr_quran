@@ -160,8 +160,8 @@ if ready:
         transition: background-color 0.2s, color 0.2s;
       }}
       .kara-active {{
-        background: #fef08a; /* Warna highlight karaoke */
-        color: #000;
+        background: #ffcccc; /* Warna highlight (merah muda) */
+        color: #a00; /* Warna teks (merah tua) */
         border-radius:4px;
       }}
     </style>
@@ -255,8 +255,9 @@ if ready:
         const latinIdx = Math.min(latinSegs.length - 1, Math.floor(frac * latinSegs.length));
 
         // Update highlight Arab
+        // Update highlight Arab
         document.querySelectorAll('.kara-seg').forEach(e => e.classList.remove('kara-active'));
-        const activeArab = document.querySelector(`.kara-seg[data-idx="{{arabIdx}}"]`);
+        const activeArab = document.querySelector(`.kara-seg[data-idx="${arabIdx}"]`); // <-- PERBAIKAN
         if (activeArab) activeArab.classList.add('kara-active');
 
         // Update highlight Latin (sedikit berbeda, kita ubah warna saja)
@@ -264,7 +265,7 @@ if ready:
             e.style.color = '#000'; // Reset warna
             e.style.backgroundColor = 'transparent';
         }});
-        const activeLatin = document.querySelector(`.kara-seg-latin[data-idx="{{latinIdx}}"]`);
+        const activeLatin = document.querySelector(`.kara-seg-latin[data-idx="${latinIdx}"]`); // <-- PERBAIKAN
         if (activeLatin) {{
             activeLatin.style.color = '#000';
             activeLatin.style.backgroundColor = '#fef08a'; // Samakan dengan highlight Arab
