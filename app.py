@@ -255,9 +255,8 @@ if ready:
         const latinIdx = Math.min(latinSegs.length - 1, Math.floor(frac * latinSegs.length));
 
         // Update highlight Arab
-        // Update highlight Arab
         document.querySelectorAll('.kara-seg').forEach(e => e.classList.remove('kara-active'));
-        const activeArab = document.querySelector(`.kara-seg[data-idx="${arabIdx}"]`); // <-- PERBAIKAN
+        const activeArab = document.querySelector('.kara-seg[data-idx="' + arabIdx + '"]');
         if (activeArab) activeArab.classList.add('kara-active');
 
         // Update highlight Latin (sedikit berbeda, kita ubah warna saja)
@@ -265,7 +264,7 @@ if ready:
             e.style.color = '#000'; // Reset warna
             e.style.backgroundColor = 'transparent';
         }});
-        const activeLatin = document.querySelector(`.kara-seg-latin[data-idx="${latinIdx}"]`); // <-- PERBAIKAN
+        const activeLatin = document.querySelector('.kara-seg-latin[data-idx="' + latinIdx + '"]');
         if (activeLatin) {{
             activeLatin.style.color = '#000';
             activeLatin.style.backgroundColor = '#fef08a'; // Samakan dengan highlight Arab
