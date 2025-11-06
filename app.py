@@ -75,6 +75,8 @@ if ready:
     st.markdown("---")
     st.markdown(f"## {surat_data['namaLatin']} : {ayat_nomor}")
 
+    st.markdown("<div id='scroll-target-player'></div>", unsafe_allow_html=True)
+
     st.markdown("**Teks Arab:**")
     st.markdown(f"<div style='font-size:40px; direction: rtl; text-align: right;'>{html.escape(arab)}</div>", unsafe_allow_html=True)
 
@@ -303,4 +305,27 @@ if ready:
 
     st.components.v1.html(html_code, height=480, scrolling=True)
     st.markdown("> 🔊 **Auto Play** & **Repeat** aktif sesuai pengaturan di atas.")
+
+    scroll_script = """
+    <script>
+        // Kita beri jeda sedikit (misal 300ms) untuk memastikan 
+        // elemen 'scroll-target-player' sudah dirender oleh Streamlit
+        setTimeout(function() {
+            // Perintah ini mencari elemen di 'jendela induk' (halaman utama Streamlit)
+            var target = window.parent.document.getElementById('scroll-target-player');
+            
+            if (target) {
+                // Perintahkan browser untuk scroll ke elemen tersebut
+                target.scrollIntoView({ 
+                    behavior: 'smooth', // Animasi scroll halus
+                    block: 'start'      // Posisikan di bagian atas layar
+                });
+            }
+        }, 300); 
+    </script>
+    """
+    # Kita gunakan height=0 karena komponen ini tidak perlu terlihat
+    st.components.v1.html(scroll_script, height=0)
+
+
 
